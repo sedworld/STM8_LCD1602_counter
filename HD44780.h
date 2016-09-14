@@ -38,18 +38,22 @@
 /* Exported types ------------------------------------------------------------*/
 /* LCD HW settings */
 /* LCDPort contains 4-bit data D0 to D3*/
+    
 /* LCDPort must be assigned to the chosen port */
 #define LCDPort GPIOC
-/* Pins E and RS of LCD must be assigned to LCDControlPort*/
-#define LCDControlPort GPIOA
+    
+///* Pins E and RS of LCD must be assigned to LCDControlPort*/
+#define LCDControlPort GPIOD
+//    /* LCD Enable pin is assigned to Px1 */
+#define LCD_Enable GPIO_PIN_2                                                   // - Enable pin LCD
+///* LCD RS pin is assigned to Px2 */
+#define LCD_RS GPIO_PIN_1                                                //RS pin
+    
 /* Define port where LCD Power is connected */
-#define LCDPwrPort GPIOD
+#define LCDPwrPort GPIOC
 /* LCD Power Supply pin is assigned to Px5 */
-#define LCDPwrPin GPIO_PIN_2                                                    //PD2 - Power pin for LCD
-/* LCD Enable pin is assigned to Px1 */
-#define LCD_Enable GPIO_PIN_1                                                   //PA1 - Enable pin LCD
-/* LCD RS pin is assigned to Px2 */
-#define LCD_RS GPIO_PIN_2                                                       //PA2 - RS pin LCD
+#define LCDPwrPin GPIO_PIN_3                                                   // - Power pin for LCD
+                                                      //PD2 - RS pin LCD
 /* HD44780 CGRAM address start */
 #define CGRAM_address_start 0x40
 

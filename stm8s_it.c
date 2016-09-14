@@ -29,7 +29,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm8s_it.h"
-  
+#include "HD44780.h"  
 
 /** @addtogroup Template_Project
   * @{
@@ -342,11 +342,13 @@ INTERRUPT_HANDLER(TIM1_CAP_COM_IRQHandler, 12)
   * @param  None
   * @retval None
   */
- INTERRUPT_HANDLER(UART1_RX_IRQHandler, 18)
+ INTERRUPT_HANDLER(UART1_RX_IRQHandler, 18)                                     ///================RX
  {
-    /* In order to detect unexpected events during development,
-       it is recommended to set a breakpoint on the following instruction.
-    */
+//   UART1_ClearFlag (UART1_FLAG_RXNE);
+//  char rx_tmp = UART1_ReceiveData8();
+//  UART1_SendData8(rx_tmp);
+//  LCD_printchar(rx_tmp);
+//  
  }
 #endif /* (STM8S208) || (STM8S207) || (STM8S103) || (STM8S903) || (STM8AF62Ax) || (STM8AF52Ax) */
 

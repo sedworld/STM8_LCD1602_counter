@@ -7,19 +7,13 @@
 #include "HD44780.h"
 
 
-char STCustom[48] =
-  {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Blank
-    0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, // 1column  |
-    0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, // 2columns ||
-    0x1c, 0x1c, 0x1c, 0x1c, 0x1c, 0x1c, 0x1c, 0x1c, // 3columns |||
-    0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, // 4columns ||||
-    0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, // 5columns |||||
-  };
 
-  char disp[] = "\0\0\0\0\0\0\0\0\n";
-  char message[5][7] = {"STM8S", "Value", "Line", "8-Bit", "Micro"};
 
+
+  char str11[] = "Set steps: \n";
+  char str18[] = "Speed: \n"; //1, 1/2, 1/4, 1/8 
+  uint8_t set_steps = 0;
+  uint8_t now_steps = 0;
 
 
 void main(void)
@@ -29,28 +23,38 @@ void main(void)
   TIM4_Config();
 
     enableInterrupts();
+
     
   LCD_PWRON();
   Delay(100);
   LCD_INIT();
   LCD_CLEAR_DISPLAY(); 
-    /* Set @CGRAM address start */
-  LCD_CMD(CGRAM_address_start);
-  /* Loading 6 characters @CGRAM address from STCustom tab */
-  LCD_LOAD_CGRAM(STCustom, 6);
 
-  //LCD_printstring("Hello world\n");
+
   uint8_t cpufreq = CLK_GetClockFreq()/1000000;
    uint8_t cnt = 0;
+   
+      BEEP_Cmd(DISABLE);
+      BEEP_Init(BEEP_FREQUENCY_1KHZ);
+      
   /* Infinite loop */  
   while (1)
   {
     GPIO_WriteReverse(LED);
     Delay(500);
     LCD_CLEAR_DISPLAY();
-    LCD_printf("FREQ %d\n", cnt++);
+    LCD_printf("Set steps %d\n", cnt);
     
-    //LCD_printstring("Привет\n");
+    if (!GPIO_ReadInputPin(BUTTON1))
+    {
+      cnt++;
+      BEEP_Cmd(ENABLE);
+      Delay(100);
+      BEEP_Cmd(DISABLE);
+    }
+    
+  
+
 
   }
   
