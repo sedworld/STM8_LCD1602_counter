@@ -29,7 +29,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm8s_it.h"
-#include "HD44780.h"  
+#include "HD44780.h" 
+#include "delay.h"
 
 /** @addtogroup Template_Project
   * @{
@@ -80,9 +81,7 @@ INTERRUPT_HANDLER_TRAP(TRAP_IRQHandler)
 INTERRUPT_HANDLER(TLI_IRQHandler, 0)
 
 {
-  /* In order to detect unexpected events during development,
-     it is recommended to set a breakpoint on the following instruction.
-  */
+
 }
 
 /**
@@ -138,11 +137,16 @@ INTERRUPT_HANDLER(EXTI_PORTB_IRQHandler, 4)
   * @param  None
   * @retval None
   */
-INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
+INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)                                     //=============GPIO PORTC 
 {
-  /* In order to detect unexpected events during development,
-     it is recommended to set a breakpoint on the following instruction.
-  */
+  
+    while(!GPIO_ReadInputPin(GPIOC, GPIO_PIN_3)){
+    GPIO_WriteReverse(GPIOD, GPIO_PIN_3);
+    Delay(500);   
+    }
+//        
+
+
 }
 
 /**
@@ -150,11 +154,11 @@ INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
   * @param  None
   * @retval None
   */
-INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler, 6)
+INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler, 6)                                     //=============GPIO PORTD
 {
-  /* In order to detect unexpected events during development,
-     it is recommended to set a breakpoint on the following instruction.
-  */
+//      GPIO_WriteReverse(GPIOD, GPIO_PIN_3);
+//      Delay(200);    
+     // EXTI_DeInit();
 }
 
 /**

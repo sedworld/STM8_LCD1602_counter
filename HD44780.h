@@ -43,16 +43,16 @@
 #define LCDPort GPIOC
     
 ///* Pins E and RS of LCD must be assigned to LCDControlPort*/
-#define LCDControlPort GPIOD
+#define LCDControlPort GPIOB
 //    /* LCD Enable pin is assigned to Px1 */
-#define LCD_Enable GPIO_PIN_2                                                   // - Enable pin LCD
+#define LCD_Enable GPIO_PIN_4                                                   // - Enable pin LCD
 ///* LCD RS pin is assigned to Px2 */
-#define LCD_RS GPIO_PIN_1                                                //RS pin
+#define LCD_RS GPIO_PIN_5                                                //RS pin
     
 /* Define port where LCD Power is connected */
-#define LCDPwrPort GPIOC
+#define LCDPwrPort GPIOD
 /* LCD Power Supply pin is assigned to Px5 */
-#define LCDPwrPin GPIO_PIN_3                                                   // - Power pin for LCD
+#define LCDPwrPin GPIO_PIN_2                                                   // - Power pin for LCD
                                                       //PD2 - RS pin LCD
 /* HD44780 CGRAM address start */
 #define CGRAM_address_start 0x40
