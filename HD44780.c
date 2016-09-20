@@ -324,11 +324,27 @@ void LCD_printf(const char *fmt, ...)
       break;
     else
     {
-      if ((letter > 0x1F) && (letter < 0x80))
+      //if ((letter > 0x1F) && (letter < 0x80))
         LCD_printchar(letter);
     }
   }
 }
+
+void clear1row()
+{
+  LCD_LOCATE(1, 1);
+  LCD_printstring("                \n");
+  LCD_LOCATE(1, 1);
+}
+
+void clear2row()
+{
+  LCD_LOCATE(2, 1);
+  LCD_printstring("                \n");
+  LCD_LOCATE(2, 1);
+}
+
+
 
 
 

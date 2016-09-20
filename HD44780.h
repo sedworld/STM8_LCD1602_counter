@@ -50,9 +50,9 @@
 #define LCD_RS GPIO_PIN_5                                                //RS pin
     
 /* Define port where LCD Power is connected */
-#define LCDPwrPort GPIOD
+#define LCDPwrPort GPIOC
 /* LCD Power Supply pin is assigned to Px5 */
-#define LCDPwrPin GPIO_PIN_2                                                   // - Power pin for LCD
+#define LCDPwrPin GPIO_PIN_3                                                   // - Power pin for LCD
                                                       //PD2 - RS pin LCD
 /* HD44780 CGRAM address start */
 #define CGRAM_address_start 0x40
@@ -81,6 +81,10 @@ void LCD_DISP_ON(void);
 void LCD_DISP_OFF(void);
 void LCD_LOCATE(u8 row, u8 column);
 void LCD_printf(const char *fmt, ...);
+void clear1row();
+void clear2row();
+
+
 
 
 #endif /* __HD44780_H */

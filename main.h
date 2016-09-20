@@ -4,9 +4,11 @@
 
 
 /* Private defines -----------------------------------------------------------*/
-#define LED GPIOD, GPIO_PIN_3
-#define BUTTON1 GPIOC, GPIO_PIN_3
-#define BUTTON2 GPIOA, GPIO_PIN_3
+//#define LED GPIOD, GPIO_PIN_3                                                   
+#define BUTTON1 GPIOD, GPIO_PIN_2                                               //button UP
+#define BUTTON2 GPIOA, GPIO_PIN_3                                               //button SET
+#define BUTTON3 GPIOD, GPIO_PIN_3                                               //button DOWN
+
 
 #define MOT_MS1 GPIOA, GPIO_PIN_2
 #define MOT_MS2 GPIOA, GPIO_PIN_1
@@ -93,8 +95,10 @@ void gpioInit(void)
   /* Configure PB5, PB4 (push button) as input floating */
   GPIO_Init(BUTTON1, GPIO_MODE_IN_PU_NO_IT);                                    //Input pull-up, external interrupt *
   GPIO_Init(BUTTON2, GPIO_MODE_IN_PU_NO_IT);
+  GPIO_Init(BUTTON3, GPIO_MODE_IN_PU_NO_IT);
   
-  GPIO_Init(GPIOD, GPIO_PIN_3, GPIO_MODE_OUT_PP_LOW_SLOW);                      /*!< Output push-pull, low level, 2MHz */
+  //led
+//  GPIO_Init(GPIOD, GPIO_PIN_3, GPIO_MODE_OUT_PP_LOW_SLOW);                      /*!< Output push-pull, low level, 2MHz */
 
     /* Configure BEEP*/
   GPIO_Init(BEEP_OUT, GPIO_MODE_OUT_PP_LOW_SLOW);
@@ -194,7 +198,7 @@ void stepPhase(int8_t ph)
       phMlt = 2;
       break;
     }
-    LCD_printf("Set phase: %u/%u", phMlt, ph%15);
+    LCD_printf("ªa·a: %u/%u", phMlt, ph%15);
   
     
 }
