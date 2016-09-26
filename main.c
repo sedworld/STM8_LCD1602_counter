@@ -17,6 +17,12 @@ uint16_t now_steps = 0; // step in system
 uint8_t now_Phase = 1; //use phase 
 uint8_t handle = 0;
 uint16_t stepDelay = 500;
+uint16_t mkmOnFullStep = 14;
+bool updateDisplay = TRUE;
+
+
+
+
 
 
 
@@ -32,7 +38,6 @@ void setStepDelay();
 
 
 
-
 void main(void)
 {
   
@@ -41,22 +46,31 @@ void main(void)
   gpioInit();
   ExtiConfig();
   beepInit();
-  openFlash(); 
+//   openFlash(); 
   enableInterrupts();
   
   
-  LCD_PWRON();
+  LCD_PWROFF();                                                                //BACKLIGHT
   // Delay(100);
   LCD_INIT();
   LCD_CLEAR_DISPLAY(); 
   
   
+//  FLASH_EraseByte(0x4002);
+//  FLASH_EraseByte(0x4003);
+  
+  
   uint8_t cpufreq = CLK_GetClockFreq()/1000000;
   
   //read values from EEPROM
-  set_steps = (uint16_t)readFlashWord(0x4000); //WORD of steps
+  set_steps = readFlash2Byte(0x4000);
+  stepDelay = readFlash2Byte(0x4002);
+  // set_steps = (uint16_t)readFlashWord(0x4000); //WORD of steps
+  //add sets_value =;
   handle = FLASH_ReadByte(0x4004);             //auto ot handle mode
-  stepDelay = (uint16_t)readFlashWord(0x4005);           //stepDelay
+  // stepDelay = (uint16_t)readFlashWord(0x4010);           //stepDelay
+  stepPhase(FLASH_ReadByte(0x4009)); //step phase
+  //stepDelay = readFlashWord(0x4010);
   
   /* Infinite loop */  
   while (1)
@@ -65,91 +79,97 @@ void main(void)
     //GPIO_WriteReverse(LED);
     //Delay(500);
     
-    LCD_LOCATE(1, 1);
-    LCD_printf("©cøaΩo≥∫a %-6u", set_steps);
+    if(updateDisplay)
+    {   
+      LCD_LOCATE(1, 1);
+      LCD_printf("©cøaΩo≥∫a %-6u", set_steps*(mkmOnFullStep>>phDiv));
+      //     LCD_printf("©cøaΩo≥∫a %-6u", metricValue(mkmOnFullStep));
+      updateDisplay = FALSE;
+    }   
     
     if (!GPIO_ReadInputPin(BUTTON1))
     {
-     
+      updateDisplay = TRUE;
       ++set_steps;
+      
       if(handle)
       {
-        stepUp(1);
+        stepUp(phMlt);
+        Delay(stepDelay);
       }
-      Delay(10);
-
-        if (!GPIO_ReadInputPin(BUTTON1))
-        {
-                Delay(680);
-          while(!GPIO_ReadInputPin(BUTTON1))
-          {
-            ++set_steps;
-            if(handle)
-            {
-              stepUp(1);
-            }
-            Delay(150);
-          }
-          
-        }
       
       
     }
     
+    
+    
+    
     if (!GPIO_ReadInputPin(BUTTON3))
     {
+      updateDisplay = TRUE;
+      
       if(set_steps>0)
       {
         --set_steps;
       }
       if(handle)
       {
-        stepDown(1);
+        stepDown(phMlt);
+        Delay(stepDelay/5);
       }
       
-      Delay(stepDelay);
+      
+      
     }
     
     
     
     if(!GPIO_ReadInputPin(BUTTON2))
     {
-      Delay(300);
+      updateDisplay = TRUE;
+      
+      Delay(300);      
       if(!GPIO_ReadInputPin(BUTTON2))
       {
         Delay(680);
-        if (!GPIO_ReadInputPin(BUTTON2))                                         // CREATE MORE SUBMENU BY LONGPRESS. 
+        if (!GPIO_ReadInputPin(BUTTON2))                                         // uf 0.7s click
         {
           LCD_CLEAR_DISPLAY();
           LCD_printstring("C≤poc?\n");
-          Delay(3000);
-          if (!GPIO_ReadInputPin(BUTTON2)) 
-          {
+          Delay(2000);
+          if (!GPIO_ReadInputPin(BUTTON2))                                      //if 3s click
+          {                                                                     //SETTINGS MENU
             LCD_CLEAR_DISPLAY();
             LCD_printstring("Hacøpoπ∫∏\n");
             Delay(1000);
             menu3s();
+            //FLASH_ProgramWord(0x4010, stepDelay);
+            
           }
-          else //if <3000ms press
-          {
-            set_steps = 0;
+          else                                                                  //if 0.7...3s click
+          {                                                                     //SET TO ZERO MENU
+            set_steps = 0;                                                      
           }
           
         }
-        else    //if 680 ms press
-        {
-          if (set_steps == 0)
+        else                                                                    // if 0.4...0.7s click    
+        {                                                                       //if set step = 0 - call MICROSTEP MENU                 
+          if (set_steps == 0)                   
           {
             setMicroStep();
+            
           }
         }
         
       }
-      else
-      {
+      else                                                                      //if 0.3s...0.6 click
+      {                                                                         //DO BURN FUNCTION
         if(handle==0)
         {
-          writeFlashWord(0x4000,set_steps);
+          //writeFlashWord(0x4000,set_steps);
+          //FLASH_ProgramWord(0x4000,set_steps);
+          writeFlash2Byte(0x4000, set_steps);
+          
           doBurn(set_steps,stepDelay);
           
         }
@@ -165,32 +185,42 @@ void main(void)
   
 }
 
+
 void doBurn(uint16_t value, uint16_t delay)
 {     
   
   if (value>0)                         // chek for zero
   {
+   
     now_steps=0;
     //clear 2 line LCD
     clear2row();
     LCD_printstring("C≥epªo≥∫a...\n");//Ò‚ÂÎÓ‚Í‡...
     
     /*---increment---*/      
-    while (now_steps<value)
+    while (GPIO_ReadInputPin(BUTTON2))
     {
-      if(GPIO_ReadInputPin(BUTTON3))
+      if(now_steps<value)
       {
+        //        if(GPIO_ReadInputPin(BUTTON3))
+        //        {
         now_steps++;
         stepUp(phMlt);
         Delay(delay);
       }
       else
-        return;
+      {
+        break;
+      }
+       
+      
+      //      }
+    
     }
     //print End message
     clear2row();                 
     LCD_printf("°oøo≥o: %d", now_steps);
-    beep(2500);
+    beep(2000);
     
     /*---decrement---*/      
     //clear 2ns line LCD
@@ -203,7 +233,7 @@ void doBurn(uint16_t value, uint16_t delay)
     {
       stepDown(phMlt);
       now_steps--;
-      Delay(delay);
+      Delay(delay/3);
     }
     //Done Message and blink backlight
     LCD_CLEAR_DISPLAY(); 
@@ -212,6 +242,7 @@ void doBurn(uint16_t value, uint16_t delay)
     LcdBacklightBlink(5);
     LCD_PWRON ();
   }
+  
   
 }
 
@@ -241,12 +272,13 @@ void stepDown(uint16_t howStep)
   
 }
 
-void setMicroStep()
+void setMicroStep()                                                             //MICROSTEP
 {
   while(!GPIO_ReadInputPin(BUTTON2))
   {
     beep(680);            
   }
+  
   
   LCD_CLEAR_DISPLAY();
   LCD_printstring("©cø. ‰a∑√ ¡a¥a\n");
@@ -268,34 +300,33 @@ void setMicroStep()
       switch(now_Phase)
       {
       case 1: 
-        LCD_LOCATE(2, 1);
         stepPhase(now_Phase);
         break;
         
       case 2:
-        LCD_LOCATE(2, 1);
         stepPhase(now_Phase);
         break;
         
       case 4:
-        LCD_LOCATE(2, 1);
         stepPhase(now_Phase);
         break;
         
       case 8:
-        LCD_LOCATE(2, 1);
         stepPhase(now_Phase);
         break;
         
       case 16:
-        LCD_LOCATE(2, 1);
+        
         stepPhase(now_Phase);
         break;
       }
-      
+      LCD_LOCATE(2, 1);
+      LCD_printf("™a∑a: %u/%u", phMlt, now_Phase%15);
     }
+    
   }
-  
+  //FLASH_ProgramByte(0x4009, now_Phase);
+  writeFlashByte(0x4009, now_Phase);
   LCD_CLEAR_DISPLAY();
   LCD_LOCATE(1, 8);
   LCD_printstring("OK\n");
@@ -331,7 +362,7 @@ void menu3s()
     }
   }
   LCD_CLEAR_DISPLAY();
-        Delay(680);
+  Delay(680);
 }
 
 
@@ -370,12 +401,13 @@ void setHandle()
       }
     }
   }
-  FLASH_ProgramByte(0x4004, handle);
+  //FLASH_ProgramByte(0x4004, handle);
+  writeFlashByte(0x4004, handle);
   LCD_CLEAR_DISPLAY();
-
+  
 }
 
-void setStepDelay()
+void setStepDelay()                                                             //STEP DELAY
 {
   LCD_CLEAR_DISPLAY();
   LCD_printstring("T ºe∂„y ¡a¥, ºc\n");//T ÏÂÊ‰Û ¯‡„, ÏÒ
@@ -397,16 +429,11 @@ void setStepDelay()
       LCD_printf("Bpeº« T, ºc %-4u", stepDelay);
     }
   }
-  
-  writeFlashWord(0x4005, stepDelay);
+  writeFlash2Byte(0x4002, stepDelay);
   LCD_CLEAR_DISPLAY();
-
+  
   
 }
-
-
-
-
 
 
 

@@ -5,8 +5,8 @@
 
 /* Private defines -----------------------------------------------------------*/
 //#define LED GPIOD, GPIO_PIN_3                                                   
-#define BUTTON1 GPIOD, GPIO_PIN_2                                               //button UP
-#define BUTTON2 GPIOA, GPIO_PIN_3                                               //button SET
+#define BUTTON1 GPIOD, GPIO_PIN_1                                               //button UP
+#define BUTTON2 GPIOD, GPIO_PIN_2                                               //button SET
 #define BUTTON3 GPIOD, GPIO_PIN_3                                               //button DOWN
 
 
@@ -18,7 +18,7 @@
 
 #define BEEP_OUT GPIOD, GPIO_PIN_4
 
-#define MOTOR_AT_HOME_PIN GPIOD, GPIO_PIN_1                                      //TODO select pin
+//#define MOTOR_AT_HOME_PIN GPIOD, GPIO_PIN_1                                      //TODO select pin
 
 #define TIM4_PERIOD       124
 
@@ -26,7 +26,7 @@
  
 
 
-#define HOME_POSITION   GPIO_ReadInputPin(MOTOR_AT_HOME_PIN)
+//#define HOME_POSITION   GPIO_ReadInputPin(MOTOR_AT_HOME_PIN)
 
 
 
@@ -38,6 +38,15 @@ void ExtiConfig();
 void openFlash();
 void writeFlashWord(uint32_t adr, uint32_t word);
 uint32_t readFlashWord(uint32_t adr);
+
+void writeFlashwData(uint32_t adr, uint32_t data);
+uint32_t readFlashwData(uint32_t adr);
+void writeFlashByte(uint32_t adr, uint8_t byte);
+
+uint16_t readFlash2Byte(uint32_t adr);
+void writeFlash2Byte(uint32_t adr, uint16_t byte);
+
+
 
 
 void UART1_Config();
@@ -54,6 +63,7 @@ bool doBack ();
 
 uint8_t phaseSetupMenu = 1;
   uint8_t phMlt = 1;
+  uint8_t phDiv;
 
 
 
@@ -148,13 +158,57 @@ void openFlash()
 
 void writeFlashWord(uint32_t adr, uint32_t word)
 {
-
+  FLASH_Unlock(FLASH_MEMTYPE_DATA );
   FLASH_ProgramWord(adr,word);
+  FLASH_Lock(FLASH_MEMTYPE_DATA );
+}
+
+void writeFlashByte(uint32_t adr, uint8_t byte)
+{
+  FLASH_Unlock(FLASH_MEMTYPE_DATA );
+  FLASH_ProgramByte(adr, byte);
+  FLASH_Lock(FLASH_MEMTYPE_DATA );
+}
+void writeFlash2Byte(uint32_t adr, uint16_t byte)
+{
+  FLASH_Unlock(FLASH_MEMTYPE_DATA );
+  FLASH_ProgramByte(adr, byte);
+  FLASH_ProgramByte(adr+1, byte>>8);
+  FLASH_Lock(FLASH_MEMTYPE_DATA );
+}
+
+uint16_t readFlash2Byte(uint32_t adr)
+{
+  uint16_t data;
+ data = (FLASH_ReadByte(adr+1)<<8)+FLASH_ReadByte(adr);
+
+  return data;
+}
+
+
+void writeFlashwData(uint32_t adr, uint32_t data)
+{
+  
+  for(uint8_t m=0; m<4; m++){
+    FLASH_ProgramByte(adr+m,data>>m*8);
+  }
+}
+
+uint32_t readFlashwData(uint32_t adr)
+{
+  uint32_t data=0;
+  for(uint8_t m=0; m<4; m++){
+    data=+FLASH_ReadByte(adr+m);
+      }
+    return data;
+
 }
 
 uint32_t readFlashWord(uint32_t adr)
 {
-  return FLASH_ReadByte(adr+0x03)+FLASH_ReadByte(adr+0x02)+FLASH_ReadByte(adr+0x01)+FLASH_ReadByte(adr);
+  uint32_t data = FLASH_ReadByte(adr+3)+FLASH_ReadByte(adr+2)+FLASH_ReadByte(adr+1)+FLASH_ReadByte(adr);
+  return data;
+    //FLASH_ReadByte(adr+0x03)+FLASH_ReadByte(adr+0x02)+FLASH_ReadByte(adr+0x01)+FLASH_ReadByte(adr);
   
 }  
 
@@ -175,30 +229,34 @@ void stepPhase(int8_t ph)
       GPIO_WriteLow(MOT_MS1);
       GPIO_WriteLow(MOT_MS2);
       phMlt = 1;
+      phDiv = 0;
       break;
     case 2:
       GPIO_WriteHigh(MOT_MS1);
       GPIO_WriteLow(MOT_MS2);
       phMlt = 1;
+      phDiv = 1;
       break;
     case 4:
       GPIO_WriteLow(MOT_MS1);
       GPIO_WriteHigh(MOT_MS2);
       phMlt = 1;
+      phDiv = 2;
       break;
     case 8: 
       GPIO_WriteHigh(MOT_MS1);
       GPIO_WriteHigh(MOT_MS2);
       phMlt = 1;
+      phDiv = 3;
       break;
     case 16: 
       GPIO_WriteLow(MOT_MS1);
       GPIO_WriteLow(MOT_MS2);
-      
+      phDiv=0;
       phMlt = 2;
       break;
     }
-    LCD_printf("ªa·a: %u/%u", phMlt, ph%15);
+//    LCD_printf("ªa·a: %u/%u", phMlt, ph%15);
   
     
 }
@@ -228,15 +286,15 @@ void ExtiConfig()
 
 bool goBurn (uint16_t value, uint16_t delay)
 {
-  uint16_t steps = value * LENGTH_STEP_FACTOR;
-  uint16_t prc = steps * 100 / value;
-  
-  do
-  {
-    --steps;
-    Delay(delay);
-  }    
-  while(steps>0);
+//  uint16_t steps = value * LENGTH_STEP_FACTOR;
+//  uint16_t prc = steps * 100 / value;
+//  
+//  do
+//  {
+//    --steps;
+//    Delay(delay);
+//  }    
+//  while(steps>0);
     
     return TRUE;
 
@@ -245,10 +303,10 @@ bool goBurn (uint16_t value, uint16_t delay)
 
 bool doBack ()
 {
-  while (HOME_POSITION)
-  {
-    
-  }
+//  while (HOME_POSITION)
+//  {
+//    
+//  }
   return TRUE;
 }
 
